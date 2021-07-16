@@ -13,6 +13,31 @@ const MeetupDetails = (props) => {
 	);
 };
 
+export async function getStaticPaths() {
+	// API calls
+
+	return {
+		fallback: false,
+		paths: [
+			{
+				params: {
+					meetupId: 'm1'
+				}
+			},
+			{
+				params: {
+					meetupId: 'm2'
+				}
+			},
+			{
+				params: {
+					meetupId: 'm3'
+				}
+			},
+		]
+	}
+}
+
 export async function getStaticProps(context) {
 	const id = context.params.meetupId;
 
