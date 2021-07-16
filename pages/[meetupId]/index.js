@@ -1,4 +1,6 @@
 import MeetupDetail from '../../components/meetups/MeetupDetail';
+import { MongoClient, ObjectId } from 'mongodb';
+
 const MeetupDetails = (props) => {
 	return (
 		<>
@@ -14,42 +16,53 @@ const MeetupDetails = (props) => {
 };
 
 export async function getStaticPaths() {
-	// API calls
+	const client = await MongoClient.connect(
+		'mongodb+srv://neerajdask:halamadrid@cluster0.ushvj.mongodb.net/mmeetups?retryWrites=true&w=majority'
+	);
+
+	const db = client.db();
+	const meetupCollection = db.collection('meetups');
+	const result = await meetupCollection.find({}, { _id: 1 }).toArray();
+
+	client.close();
 
 	return {
 		fallback: false,
-		paths: [
-			{
+		paths: result.map((meetup) => {
+			return {
 				params: {
-					meetupId: 'm1'
-				}
-			},
-			{
-				params: {
-					meetupId: 'm2'
-				}
-			},
-			{
-				params: {
-					meetupId: 'm3'
-				}
-			},
-		]
-	}
+					meetupId: meetup._id.toString(),
+				},
+			};
+		}),
+	};
 }
 
 export async function getStaticProps(context) {
 	const id = context.params.meetupId;
 
+	const client = await MongoClient.connect(
+		'mongodb+srv://neerajdask:halamadrid@cluster0.ushvj.mongodb.net/mmeetups?retryWrites=true&w=majority'
+	);
+
+	const db = client.db();
+	const meetupCollection = db.collection('meetups');
+	const result = await meetupCollection
+		.findOne({
+			_id: ObjectId(id),
+		})
+		.toArray();
+
+	client.close();
+
 	return {
 		props: {
 			meetupData: {
-				id: id,
-				title: 'Vue Conf, Berlin',
-				address: 'Berlin, Townhall',
-				image: 'https://upload.wikimedia.org/wikipedia/commons/a/a6/Brandenburger_Tor_abends.jpg',
-
-				description: 'Germanys best developers',
+				id: result._id.toString(),
+				title: result.title,
+				description: result.description,
+				image: result.image,
+				address: result.address,
 			},
 		},
 	};

@@ -1,5 +1,5 @@
 import MeetupList from '../components/meetups/MeetupList';
-import Layout from '../components/layout/Layout';
+import { MongoClient } from 'mongodb';
 import React from 'react';
 
 const DUMMY_MEETUPS = [
@@ -43,7 +43,7 @@ const Home = (props) => {
 
 // 	// const req = context.req;
 // 	// const res = context.res;
-	
+
 // 	return {
 // 		props: {
 // 			meetups: DUMMY_MEETUPS,
@@ -53,10 +53,26 @@ const Home = (props) => {
 
 export async function getStaticProps() {
 	// API calls here
+	const client = await MongoClient.connect(
+		'mongodb+srv://neerajdask:halamadrid@cluster0.ushvj.mongodb.net/mmeetups?retryWrites=true&w=majority'
+	);
+
+	const db = client.db();
+	const meetupCollection = db.collection('meetups');
+	const result = await meetupCollection.find().toArray();
+
+	client.close();
 
 	return {
 		props: {
-			meetups: DUMMY_MEETUPS,
+			meetups: result.map((meetup) => {
+				return {
+					title: meetup.title,
+					image: meetup.image,
+					address: meetup.address,
+					id: meetup._id.toString(),
+				};
+			}),
 		},
 		revalidate: 10,
 	};
