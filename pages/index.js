@@ -1,7 +1,8 @@
 import MeetupList from '../components/meetups/MeetupList';
 import Layout from '../components/layout/Layout';
+import React from 'react';
 
-const DUMMY_MEETUP = [
+const DUMMY_MEETUPS = [
 	{
 		id: 'm1',
 		title: 'Vue Conf, Berlin',
@@ -24,12 +25,26 @@ const DUMMY_MEETUP = [
 		description: 'Conference on Directives',
 	},
 ];
-const Home = () => {
+const Home = (props) => {
+	// const [loadedMeetups, setLoadedMeetups] = React.useState([]);
+	// React.useEffect(() => {
+	// 	setLoadedMeetups(DUMMY_MEETUP);
+	// }, []);
 	return (
 		<>
-			<MeetupList meetups={DUMMY_MEETUP} />
+			<MeetupList meetups={props.meetups} />
 		</>
 	);
 };
+
+export async function getStaticProps() {
+	// API calls here
+
+	return {
+		props: {
+			meetups: DUMMY_MEETUPS,
+		},
+	};
+}
 
 export default Home;
