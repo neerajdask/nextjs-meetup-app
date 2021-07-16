@@ -1,71 +1,75 @@
-import MeetupDetail from '../../components/meetups/MeetupDetail';
 import { MongoClient, ObjectId } from 'mongodb';
+import { Fragment } from 'react';
+import Head from 'next/head';
 
-const MeetupDetails = (props) => {
-	return (
-		<>
-			<MeetupDetail
-				title={props.meetupData.title}
-				id={props.meetupData.id}
-				address={props.meetupData.address}
-				image={props.meetupData.image}
-				description={props.meetupData.description}
-			/>
-		</>
-	);
-};
+import MeetupDetail from '../../components/meetups/MeetupDetail';
+
+function MeetupDetails(props) {
+  return (
+    <Fragment>
+      <Head>
+        <title>{props.meetupData.title}</title>
+        <meta name='description' content={props.meetupData.description} />
+      </Head>
+      <MeetupDetail
+        image={props.meetupData.image}
+        title={props.meetupData.title}
+        address={props.meetupData.address}
+        description={props.meetupData.description}
+      />
+    </Fragment>
+  );
+}
 
 export async function getStaticPaths() {
-	const client = await MongoClient.connect(
-		'mongodb+srv://neerajdask:halamadrid@cluster0.ushvj.mongodb.net/mmeetups?retryWrites=true&w=majority'
-	);
+  const client = await MongoClient.connect(
+    'mongodb+srv://neerajdask:halamadrid@cluster0.ushvj.mongodb.net/mmeetups?retryWrites=true&w=majority'
+  );
+  const db = client.db();
 
-	const db = client.db();
-	const meetupCollection = db.collection('meetups');
-	const result = await meetupCollection.find({}, { _id: 1 }).toArray();
+  const meetupsCollection = db.collection('meetups');
 
-	client.close();
+  const meetups = await meetupsCollection.find({}, { _id: 1 }).toArray();
 
-	return {
-		fallback: false,
-		paths: result.map((meetup) => {
-			return {
-				params: {
-					meetupId: meetup._id.toString(),
-				},
-			};
-		}),
-	};
+  client.close();
+
+  return {
+    fallback: 'blocking',
+    paths: meetups.map((meetup) => ({
+      params: { meetupId: meetup._id.toString() },
+    })),
+  };
 }
 
 export async function getStaticProps(context) {
-	const id = context.params.meetupId;
+  // fetch data for a single meetup
 
-	const client = await MongoClient.connect(
-		'mongodb+srv://neerajdask:halamadrid@cluster0.ushvj.mongodb.net/mmeetups?retryWrites=true&w=majority'
-	);
+  const meetupId = context.params.meetupId;
 
-	const db = client.db();
-	const meetupCollection = db.collection('meetups');
-	const result = await meetupCollection
-		.findOne({
-			_id: ObjectId(id),
-		})
-		.toArray();
+  const client = await MongoClient.connect(
+    'mongodb+srv://neerajdask:halamadrid@cluster0.ushvj.mongodb.net/mmeetups?retryWrites=true&w=majority'
+  );
+  const db = client.db();
 
-	client.close();
+  const meetupsCollection = db.collection('meetups');
 
-	return {
-		props: {
-			meetupData: {
-				id: result._id.toString(),
-				title: result.title,
-				description: result.description,
-				image: result.image,
-				address: result.address,
-			},
-		},
-	};
+  const selectedMeetup = await meetupsCollection.findOne({
+    _id: ObjectId(meetupId),
+  });
+
+  client.close();
+
+  return {
+    props: {
+      meetupData: {
+        id: selectedMeetup._id.toString(),
+        title: selectedMeetup.title,
+        address: selectedMeetup.address,
+        image: selectedMeetup.image,
+        description: selectedMeetup.description,
+      },
+    },
+  };
 }
 
 export default MeetupDetails;
