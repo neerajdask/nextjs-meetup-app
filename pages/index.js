@@ -37,6 +37,20 @@ const Home = (props) => {
 	);
 };
 
+// export async function getServerSideProps(context) {
+// 	// API calls here
+// 	// SUitable for high frequency data changes.
+
+// 	// const req = context.req;
+// 	// const res = context.res;
+	
+// 	return {
+// 		props: {
+// 			meetups: DUMMY_MEETUPS,
+// 		},
+// 	};
+// }
+
 export async function getStaticProps() {
 	// API calls here
 
@@ -44,7 +58,7 @@ export async function getStaticProps() {
 		props: {
 			meetups: DUMMY_MEETUPS,
 		},
-		revalidate: 10
+		revalidate: 10,
 	};
 }
 
